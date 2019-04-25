@@ -16,25 +16,23 @@ public class Main {
     public static void main(String[] args) {
         Maze maze = new Maze();
         maze.regen(49);
-        maze.show(true);
+        maze.show();
     }
 }
 
 class Maze{
-    JFrame frame;
-    static JPanel panel;
-    static int stackSizeMax;
-    Rectangle bounds;
-    int[][] mazeCells;
-    int cellSize = 16;
-    Stack<Pair<Integer,Integer>> stack;
-    Random rnd;
-    int[] pathChooser = new int[]{1,2,3,4};
-    ArrayList<Pair<Integer,Integer>> visitedCells;
-    ArrayList<Integer> acceptedDirections;
-    Thread iterRun;
+    private JFrame frame;
+    private static JPanel panel;
+    private static int stackSizeMax;
+    private int[][] mazeCells;
+    private int cellSize = 16;
+    private Stack<Pair<Integer,Integer>> stack;
+    private Random rnd;
+    private int[] pathChooser = new int[]{1,2,3,4};
+    private ArrayList<Pair<Integer,Integer>> visitedCells;
+    private ArrayList<Integer> acceptedDirections;
 
-    public Maze(){
+    Maze(){
         frame = new JFrame("maze");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
@@ -52,14 +50,14 @@ class Maze{
                 }
             }
         };
-        bounds = new Rectangle(400,100,832,848);
+        Rectangle bounds = new Rectangle(400, 100, 832, 848);
         frame.setBounds(bounds);
         panel.setBounds(bounds);
         frame.add(panel);
     }
 
-    void saveToFile(){
-        BufferedWriter br = null;
+    private void saveToFile(){
+        BufferedWriter br;
         try {
             br = new BufferedWriter(new FileWriter("assets/output.csv"));
             StringBuilder sb = new StringBuilder();
@@ -87,34 +85,29 @@ class Maze{
         }
     }
 
-    void show(boolean state){
+    void show(){
 
         regen(mazeCells.length);
 
-        if (state) {
-            iterRun = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("maze gen start on " + new Date());
-                    int iter = 0;
-                    while (!stack.isEmpty()){
-                        try {
-                            Thread.sleep(1);
-                            update();
-                            iter++;
-                            panel.repaint();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    System.out.println("max gen stack size: "+stackSizeMax);
-                    System.out.println("maze gen finish by "+ iter +" iterations on " + new Date());
-                    saveToFile();
+        Thread iterRun = new Thread(() -> {
+            System.out.println("maze gen start on " + new Date());
+            int iter = 0;
+            while (!stack.isEmpty()) {
+                try {
+                    Thread.sleep(1);
+                    update();
+                    iter++;
+                    panel.repaint();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
-            iterRun.setDaemon(true);
-        }
-        frame.setVisible(state);
+            }
+            System.out.println("max gen stack size: " + stackSizeMax);
+            System.out.println("maze gen finish by " + iter + " iterations on " + new Date());
+            saveToFile();
+        });
+        iterRun.setDaemon(true);
+        frame.setVisible(true);
         iterRun.run();
     }
 
@@ -167,7 +160,7 @@ class Maze{
         }
     }
 
-    public void regen(int mazeSize) {
+    void regen(int mazeSize) {
         rnd = new Random();
         visitedCells = new ArrayList<>();
         acceptedDirections = new ArrayList<>();
